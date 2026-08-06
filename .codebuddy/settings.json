@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CODEBUDDY_PROJECT_DIR/.codebuddy/hooks/runtime_context.py\" --event SessionStart",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CODEBUDDY_PROJECT_DIR/.codebuddy/hooks/runtime_context.py\" --event UserPromptSubmit",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "memory": {
+    "autoMemoryEnabled": false
+  }
+}

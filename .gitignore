@@ -1,0 +1,50 @@
+# === 系统杂项 ===
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+__pycache__/
+*.pyc
+
+# === 凭证与密钥（绝不入库）===
+.env
+.env.*
+auth.json
+*.key
+*.pem
+**/credentials*
+
+# === WorkBuddy 运行时本地态（绝不入库）===
+# PGH 初始化答案、状态与收据
+.pgh/
+# 任何部署或实验生成的运行副本
+runtime/
+# 会话转写含用户全部对话内容
+sessions/
+archived_sessions/
+dream-bundles/
+# 本地数据库（记忆 / 目标 / 日志 / 状态）
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+# 运行时缓存与本地状态
+cache/
+backups/
+.codebuddy-global-state.json*
+installation_id
+session_index.jsonl
+models_cache.json
+transcription-history.jsonl
+hook_invocations.log
+
+# === 用户私有运行内容（部署后本地生成，模板仓库不含）===
+workspace/**/_local/
+workspace/**/.obsidian/
+
+# === 本地安全备份，只保留在发布者机器上 ===
+.pre-mass-fix-backup-*/
+
+# === WorkBuddy 私有运行态（绝不入库）===
+runtime/**
+!runtime/.gitkeep
+.pgh/
