@@ -18,7 +18,7 @@ description: 运行 [AI 名字] 的轻量启动同步。每次新会话或上下
 
 **上游**：`CODEBUDDY.md §B · 启动序列` 第 5 步。
 
-**输入**：`_current.md`、`<WORKSPACE_ROOT>/MEMORY/last_dream.md`。
+**输入**：`.pgh/state.json`、`_current.md`、`<WORKSPACE_ROOT>/MEMORY/00.memory_agent.md`、`<WORKSPACE_ROOT>/MEMORY/last_dream.md`。
 
 **同级技能**：`daily-dream` 负责缺日恢复；`daily-dream` 的周段分支负责周日工作复盘。
 
@@ -34,7 +34,7 @@ description: 运行 [AI 名字] 的轻量启动同步。每次新会话或上下
 
 ### 第 2 步 · 校验梦探针
 
-使用 `00.memory_agent.md §逻辑日期` 的口径。
+先从 `.pgh/state.json` 读取 IANA 时区与 `boundary_hour`，再与 `00.memory_agent.md §逻辑日期` 机械核对。任一缺失、不可解析或两处边界不同都停止补跑并报告初始化状态损坏，不得回退到公开模板默认值。
 
 ```text
 应完成梦日期 = 当前逻辑日期 - 1 个自然日
@@ -58,7 +58,7 @@ description: 运行 [AI 名字] 的轻量启动同步。每次新会话或上下
 
 **自动补跑原因**：缺勤通常由睡眠、关机或断网造成，这些情况都发生在无人值守的夜间。只给提示会让恢复取决于用户是否注意到；连续漏跑会让记忆系统只剩白天半链，而且损失没有显式报警。
 
-**日界线因部署而异。** 从 WorkBuddy 初始化访谈写入的 `CODEBUDDY.md §时间感知` 读取，禁止假定日界线为 06:00 或运行时刻为 06:10。原生自动化任务在日界线后 30 分钟触发。
+**日界线因部署而异。** 当前实例权威是 `.pgh/state.json` 与运行工作区的 `00.memory_agent.md §逻辑日期`；公开 `CODEBUDDY.md §时间感知` 只是未初始化示例。禁止假定日界线为 06:00 或运行时刻为 06:10。原生自动化任务在日界线后 30 分钟触发。
 
 ### 第 3b 步 · 校验原生自动化任务地面证据
 

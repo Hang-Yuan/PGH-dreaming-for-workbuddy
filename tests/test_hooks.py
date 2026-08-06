@@ -51,6 +51,9 @@ class HookTest(unittest.TestCase):
                     "status": "BASIC_INITIALIZED",
                     "schedule_status": "PENDING",
                     "runtime_workspace": "runtime/workspace",
+                    "timezone": "UTC",
+                    "boundary_hour": 4,
+                    "night_runtime_availability": "available overnight",
                 }
             ),
             encoding="utf-8",
@@ -67,6 +70,28 @@ class HookTest(unittest.TestCase):
         self.assertIn("assistant identity", context)
         self.assertIn("user identity", context)
         self.assertIn("schedule_status=PENDING", context)
+        self.assertIn("timezone=UTC", context)
+        self.assertIn("logical_day_boundary=04:00", context)
+        self.assertIn("daily_schedule_time=04:30", context)
+        self.assertIn("night_runtime_availability=available overnight", context)
+
+    def test_initialized_context_rejects_missing_time_authority(self):
+        (self.project / ".pgh").mkdir()
+        (self.project / ".pgh" / "state.json").write_text(
+            json.dumps(
+                {
+                    "status": "BASIC_INITIALIZED",
+                    "schedule_status": "PENDING",
+                    "runtime_workspace": "runtime/workspace",
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self.invoke(
+            "SessionStart", {"hook_event_name": "SessionStart", "source": "startup"}
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("invalid timezone", result.stderr)
 
     def test_wrong_event_fails_closed(self):
         result = self.invoke("UserPromptSubmit", {"hook_event_name": "SessionStart"})

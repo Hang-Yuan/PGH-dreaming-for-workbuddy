@@ -342,7 +342,7 @@ PGH 梦境系统默认内置两个子代理：
 | L0 只读源 | WorkBuddy 项目会话转写（默认位于 `<WORKBUDDY_HOME>/projects/*/*.jsonl`，由本地运行时自动落盘） | 否 |
 | 情景层（机器标识 `episodic`） | `MEMORY/episodic_memory.md`（1-3 星候选模式，活动 / 复审 / 候补 / 休眠四态） | 否 |
 | 语义层（机器标识 `semantic`） | `MEMORY/semantic_memory.md`（做梦代谢中间工作区，4-6 星，等毕业进身份层） | **否**（v6.1.0 退出启动注入） |
-| 身份层（`identity`） | `SOUL/persona/persona_SOUL.md` / `USER/USER.md` + 子文件 / `<WORKBUDDY_HOME>/skills/` / `CODEBUDDY.md §R` | — |
+| 身份层（`identity`） | `SOUL/persona/persona_SOUL.md` / `USER/USER.md` + 子文件 / `.codebuddy/skills/` / `CODEBUDDY.md §R` | — |
 
 ### M.2 · 白天零写入、零注入、夜间集中代谢
 
@@ -386,7 +386,7 @@ PGH 梦境系统默认内置两个子代理：
 | 记忆写入与权威源冲突 | 停止，呈现冲突，等裁决 |
 | 专注区文件未纳入 `_current.md` | `weekly-dream` 账实核对处理；遗漏 N 级告知 |
 |语义记忆持续满载不降 | `weekly-dream` 容量强制清理；持续则提阈值调参 |
-| 技能未发现 | 检查 `<WORKBUDDY_HOME>/skills/` 下对应目录 |
-| 钩子报错 | 告知用户检查 `config.toml` |
+| 技能未发现 | 检查当前项目 `.codebuddy/skills/` 下对应目录 |
+| 钩子报错 | 告知用户检查 `.codebuddy/settings.json` 与 `.codebuddy/hooks/` |
 | 疑似智能异常 | [用户称呼]判定“不是[AI 名字]”/“停，感觉不对” → 当前会话停所有写入，转只读，等授权 |
 | 智能异常恢复 | [用户称呼]授权后定位异常会话起点，touched 文件全部恢复到会话开始前；期间所有改动一概不作数 |

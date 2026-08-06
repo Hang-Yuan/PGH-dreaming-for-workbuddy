@@ -56,6 +56,58 @@ class WorkBuddyStructureTest(unittest.TestCase):
         self.assertIn("--output-dir runtime/dream-bundles/YYYY-MM-DD", body)
         self.assertNotIn("--project-root <WORKSPACE_ROOT>", body)
 
+    def test_core_schedule_contract_matches_all_hosts(self):
+        root = (ROOT / "CODEBUDDY.md").read_text(encoding="utf-8")
+        schedule = (ROOT / "docs" / "schedule_interview.md").read_text(encoding="utf-8")
+        daily = (
+            ROOT / ".codebuddy" / "skills" / "daily-dream" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        week_sync = (
+            ROOT / ".codebuddy" / "skills" / "week-sync" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        for expected in ("作息", "IANA 时区", "WorkBuddy 可用性"):
+            self.assertIn(expected, root)
+            self.assertIn(expected, schedule)
+        self.assertIn("日界线后 30 分钟", schedule)
+        self.assertIn("唯一一条 `daily-dream`", root)
+        self.assertIn("A 段 · 工作固化", daily)
+        self.assertIn("B 段 · 记忆代谢", daily)
+        self.assertIn("weekly-dream", daily)
+        self.assertIn("dream_receipts/YYYY-MM-DD.json", daily)
+        self.assertIn("最近三个", week_sync)
+
+    def test_no_stale_workbuddy_adapter_routes(self):
+        active = [
+            ROOT / "CODEBUDDY.md",
+            ROOT / "docs" / "核心分流.md",
+            ROOT / ".codebuddy" / "rules" / "pgh-core.md",
+            ROOT / ".codebuddy" / "rules" / "workbuddy-adapter.md",
+            ROOT / "workspace" / "MEMORY" / "00.memory_agent.md",
+        ]
+        body = "\n".join(path.read_text(encoding="utf-8") for path in active)
+        self.assertNotIn("<WORKBUDDY_HOME>/skills/", body)
+        self.assertNotIn("config.toml", body)
+        self.assertNotIn("当前实验区", body)
+        self.assertNotIn("PGH Core 规则（脱敏实验版）", body)
+
+    def test_common_core_skill_set_is_complete(self):
+        expected = {
+            "close-node",
+            "create-project",
+            "daily-dream",
+            "new-file",
+            "quarterly-archive",
+            "week-sync",
+            "weekly-dream",
+            "write-progress",
+        }
+        actual = {
+            path.parent.name
+            for path in (ROOT / ".codebuddy" / "skills").glob("*/SKILL.md")
+        }
+        self.assertTrue(expected.issubset(actual))
+        self.assertEqual(actual - expected, {"initialize-pgh"})
+
     def test_local_markdown_links_resolve(self):
         failures = []
         pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")

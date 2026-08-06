@@ -34,6 +34,7 @@ REQUIRED_KEYS = {
     "current_constraints",
     "sleep_time",
     "wake_time",
+    "night_runtime_availability",
     "boundary_hour",
 }
 
@@ -107,6 +108,7 @@ def validate_answers(raw: dict) -> dict:
         "current_constraints": 500,
         "sleep_time": 40,
         "wake_time": 40,
+        "night_runtime_availability": 300,
     }
     for key, maximum in limits.items():
         result[key] = one_line(raw[key], key, maximum)
@@ -128,6 +130,10 @@ def interactive_answers() -> dict:
         ("current_constraints", "近期约束或风险："),
         ("sleep_time", "通常几点睡："),
         ("wake_time", "通常几点起："),
+        (
+            "night_runtime_availability",
+            "夜间是否能保持电脑与 WorkBuddy 本地执行环境可用（如不能，请说明）：",
+        ),
     )
     values = {key: input(prompt) for key, prompt in prompts}
     values["boundary_hour"] = int(input("确认的逻辑日界线整点（0-23）：").strip())
@@ -165,8 +171,7 @@ def write_profile(a: dict) -> list[Path]:
     week = f"{iso.year}-W{iso.week:02d}"
     monday = date.today() - timedelta(days=date.today().weekday())
     sunday = monday + timedelta(days=6)
-    schedule_hour = (a["boundary_hour"] + (1 if 30 >= 60 else 0)) % 24
-    schedule_time = f"{schedule_hour:02d}:30"
+    schedule_time = f"{a['boundary_hour']:02d}:30"
 
     user = RUNTIME_WORKSPACE / "USER" / "USER.md"
     atomic_text(
@@ -199,10 +204,10 @@ updated: {today}
 
 ## 加载链
 
-- 人格：`workspace/SOUL/persona/persona_SOUL.md`
-- 当前处境：`workspace/Long_Term_Memory/status.md`
-- 工作台：`workspace/00 Focus Zone/_current.md`
-- 记忆规则：`workspace/MEMORY/00.memory_agent.md`
+- 人格：`<WORKSPACE_ROOT>/SOUL/persona/persona_SOUL.md`
+- 当前处境：`<WORKSPACE_ROOT>/Long_Term_Memory/status.md`
+- 工作台：`<WORKSPACE_ROOT>/00 Focus Zone/_current.md`
+- 记忆规则：`<WORKSPACE_ROOT>/MEMORY/00.memory_agent.md`
 """,
     )
 
@@ -265,6 +270,7 @@ updated: {today}
 - 通常作息：{a['sleep_time']} 入睡，{a['wake_time']} 起床
 - 逻辑日界线：`{a['boundary_hour']:02d}:00`
 - 每日任务建议时刻：`{schedule_time}`
+- 夜间执行环境：{a['night_runtime_availability']}
 - 排程状态：待 WorkBuddy 桌面端原生自动化任务回读验证
 
 ## 项目现状
@@ -337,6 +343,7 @@ def initialize(answers: dict) -> dict:
         "timezone": a["timezone"],
         "boundary_hour": a["boundary_hour"],
         "suggested_daily_time": schedule_time,
+        "night_runtime_availability": a["night_runtime_availability"],
         "workbuddy_home": "<WORKBUDDY_HOME>",
         "runtime_workspace": "runtime/workspace",
         "public_template_workspace": "workspace",

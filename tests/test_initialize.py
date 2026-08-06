@@ -27,6 +27,7 @@ def answers() -> dict:
         "current_constraints": "keep all personal data local",
         "sleep_time": "23:00",
         "wake_time": "07:00",
+        "night_runtime_availability": "电脑和 WorkBuddy 夜间保持可用",
         "boundary_hour": 4,
     }
 
@@ -62,11 +63,15 @@ class InitializeTest(unittest.TestCase):
         state = json.loads((self.copy / ".pgh" / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(state["status"], "BASIC_INITIALIZED")
         self.assertEqual(state["schedule_status"], "PENDING")
+        self.assertEqual(state["suggested_daily_time"], "04:30")
+        self.assertIn("夜间保持可用", state["night_runtime_availability"])
         user = (self.copy / "runtime" / "workspace" / "USER" / "USER.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("Example User", user)
         self.assertNotIn("[用户称呼]", user)
+        self.assertIn("<WORKSPACE_ROOT>/SOUL/persona/persona_SOUL.md", user)
+        self.assertNotIn("`workspace/SOUL/", user)
         public_user = (self.copy / "workspace" / "USER" / "USER.md").read_text(encoding="utf-8")
         self.assertIn("[用户称呼]", public_user)
         codebuddy = (self.copy / "CODEBUDDY.md").read_text(encoding="utf-8")
@@ -75,6 +80,11 @@ class InitializeTest(unittest.TestCase):
             self.copy / "runtime" / "workspace" / "MEMORY" / "00.memory_agent.md"
         ).read_text(encoding="utf-8")
         self.assertIn("物理小时 < 04:00", runtime_memory)
+        status = (
+            self.copy / "runtime" / "workspace" / "Long_Term_Memory" / "status.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("每日任务建议时刻：`04:30`", status)
+        self.assertIn("夜间执行环境：电脑和 WorkBuddy 夜间保持可用", status)
         receipt = json.loads(
             (self.copy / ".pgh" / "receipts" / "basic-initialization.json").read_text(
                 encoding="utf-8"

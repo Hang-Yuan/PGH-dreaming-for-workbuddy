@@ -9,6 +9,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 MAX_INPUT_BYTES = 256 * 1024
 MAX_IDENTITY_BYTES = 1024 * 1024
@@ -85,12 +86,34 @@ def context(root: Path, event: str, payload: dict) -> str:
     workspace = state.get("runtime_workspace", "runtime/workspace")
     if not isinstance(workspace, str) or Path(workspace).is_absolute() or ".." in Path(workspace).parts:
         raise SystemExit("invalid runtime workspace in PGH state")
+    timezone_name = state.get("timezone")
+    if not isinstance(timezone_name, str) or not timezone_name or len(timezone_name) > 80:
+        raise SystemExit("invalid timezone in PGH state")
+    try:
+        ZoneInfo(timezone_name)
+    except (KeyError, ValueError) as exc:
+        raise SystemExit("invalid timezone in PGH state") from exc
+    boundary = state.get("boundary_hour")
+    if not isinstance(boundary, int) or isinstance(boundary, bool) or not 0 <= boundary <= 23:
+        raise SystemExit("invalid logical-day boundary in PGH state")
+    availability = state.get("night_runtime_availability", "未记录；初始化尚未闭合")
+    if (
+        not isinstance(availability, str)
+        or not availability.strip()
+        or len(availability) > 300
+        or any(ord(char) < 32 or ord(char) == 127 for char in availability)
+    ):
+        raise SystemExit("invalid night runtime availability in PGH state")
     source = payload.get("source", "prompt")
     sections = [
         f"PGH_WORKBUDDY_CONTEXT_V1 event={event} source={source}",
         f"initialization_status={state['status']}",
         f"schedule_status={state.get('schedule_status', 'UNKNOWN')}",
         f"runtime_workspace={workspace}",
+        f"timezone={timezone_name}",
+        f"logical_day_boundary={boundary:02d}:00",
+        f"daily_schedule_time={boundary:02d}:30",
+        f"night_runtime_availability={availability.strip()}",
         identity_section(root, f"{workspace}/SOUL/persona/persona_SOUL.md"),
         identity_section(root, f"{workspace}/USER/USER.md"),
     ]
