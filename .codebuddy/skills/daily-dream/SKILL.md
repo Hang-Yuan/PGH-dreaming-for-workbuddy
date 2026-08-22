@@ -15,7 +15,7 @@ description: 把每日工作固化与记忆代谢串成一条事务链。用于�
 - 把 WorkBuddy JSONL 转写视为外部只读 L0；不得编辑或移动。
 - 默认只回放当前 PGH 项目的人类会话。使用 WorkBuddy 本地会话索引机械排除后台自动化；索引缺失的会话按未分类排除，不凭内容猜来源。
 - 不在记忆文件中重建项目历史。项目事实留在项目文件、`_current.md` 或长期记忆中。
-- 不直接读写 `MEMORY_LOG.md` 或 `ITERATION_LOG.md`。把定稿后的精确文本交给 `storage-agent`。
+- 不直接写 `MEMORY_LOG.md` 或 `ITERATION_LOG.md`（定稿后交 `storage-agent` 落盘）；提交时只可读重读 `MEMORY_LOG.md` 核验落盘结果与 U+FFFD=0，不改变内容。
 - 只有 USER、SOUL、AGENTS 协议结构、技能、钩子和整份文件删除需要 C 级授权。池内操作属于 N 级，并必须在梦日志中披露。
 - 白天连续写池已停用。`close-node` 是唯一在场例外；只有节点明确闭合且至少有两个独立事件支持该模式时，才可写入 L1。
 - **两段事务隔离**：A 段落盘即闭环，B 段失败不回滚 A 段；已固化的工作不因代谢失败作废。
@@ -186,7 +186,7 @@ $weekly-dream --date <D> --bundle /tmp/daily-dream/<D>
 1. 写入记忆池正文和语义证据。
 2. 重读触及的条目，核验计数和状态不变量。
 3. 定稿一条紧凑的梦日志，含容量报数、巡检异常，以及周日分支的原样返回或“未触发”，然后交给 `storage-agent`。
-4. 确认 `storage-agent` 已完成写入和 U+FFFD 检查。
+4. 无论 `storage-agent` 是否返回回执，主动重读 `MEMORY_LOG.md`，核验目标逻辑日的梦日志条目存在且全文 U+FFFD=0；核验为只读动作、不改变内容，核验通过才继续写提交收据，条目缺失或含 U+FFFD 则按兜底协议处理并记录精确断点。
 5. 待 C 级裁决项（毕业候选、权威源冲突）追加到 `<WORKSPACE_ROOT>/Long_Term_Memory/_pending_verdicts.md`，保证每会话可见直到处理。
 6. 写提交收据 `<WORKSPACE_ROOT>/MEMORY/dream_receipts/YYYY-MM-DD.json` 为 `COMMITTED`：仅在覆盖、A 段、决策、审计与 `MEMORY_LOG.md` 全部完成后执行。
 7. 把 `last_dream.md` 更新为已经完成的逻辑日期。
