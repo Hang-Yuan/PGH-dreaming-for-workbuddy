@@ -48,3 +48,5 @@ workspace/**/.obsidian/
 runtime/**
 !runtime/.gitkeep
 .pgh/
+# WorkBuddy 本地记忆与自动化运行态（最后一次 commit 后出现的私有目录）
+.workbuddy/

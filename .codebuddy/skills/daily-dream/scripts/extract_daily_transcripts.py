@@ -57,12 +57,14 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--projects-root", type=Path, default=DEFAULT_PROJECTS)
     parser.add_argument("--database", type=Path, default=DEFAULT_DATABASE)
     parser.add_argument("--project-root", type=Path, default=ROOT)
-    parser.add_argument("--scope", choices=("project", "all"), default="project")
+    parser.add_argument("--scope", choices=("project", "all"), default=None)
     parser.add_argument("--output-dir", type=Path)
     return parser.parse_args()
 
 
-def load_authority(explicit_timezone: str | None, explicit_boundary: int | None) -> tuple[str, int]:
+def load_authority(
+    explicit_timezone: str | None, explicit_boundary: int | None
+) -> tuple[str, int, str | None]:
     state_path = ROOT / ".pgh" / "state.json"
     state: dict = {}
     if state_path.exists():
@@ -71,12 +73,15 @@ def load_authority(explicit_timezone: str | None, explicit_boundary: int | None)
             state = raw
     timezone_name = explicit_timezone or state.get("timezone")
     boundary = explicit_boundary if explicit_boundary is not None else state.get("boundary_hour")
+    l0_scope = state.get("l0_scope")
+    if l0_scope not in ("project", "all"):
+        l0_scope = None
     if not isinstance(timezone_name, str):
         raise RuntimeError("timezone is missing; finish PGH basic initialization or pass --timezone")
     ZoneInfo(timezone_name)
     if not isinstance(boundary, int) or isinstance(boundary, bool) or not 0 <= boundary <= 23:
         raise RuntimeError("boundary hour is missing or invalid")
-    return timezone_name, boundary
+    return timezone_name, boundary, l0_scope
 
 
 def session_index(database: Path) -> dict[str, SessionMeta]:
@@ -283,7 +288,8 @@ def write_output(
 
 def main() -> int:
     args = arguments()
-    timezone_name, boundary = load_authority(args.timezone, args.boundary_hour)
+    timezone_name, boundary, state_scope = load_authority(args.timezone, args.boundary_hour)
+    scope = args.scope or state_scope or "project"
     zone = ZoneInfo(timezone_name)
     target = date.fromisoformat(args.date)
     start = datetime.combine(target, time(hour=boundary), tzinfo=zone)
@@ -302,7 +308,7 @@ def main() -> int:
         if meta.background_automation:
             excluded.append({"session_id": session_id, "reason": "background_automation"})
             continue
-        if args.scope == "project" and not inside_project(meta.cwd, args.project_root):
+        if scope == "project" and not inside_project(meta.cwd, args.project_root):
             excluded.append({"session_id": session_id, "reason": "outside_project_scope"})
             continue
         messages, report = scan(path, meta, start, end, zone)
